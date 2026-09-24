@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RareVault — The World's Rarest Items</title>
+<style>
+  :root {
+    --bg: #0c0c0e;
+    --bg2: #141417;
+    --card: #1a1a1f;
+    --gold: #d4af37;
+    --gold2: #f5d67b;
+    --text: #f2f0e9;
+    --muted: #a1a1aa;
+    --line: #2a2a30;
+    --green: #22c55e;
+    --red: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  a { color: inherit; }
+  header { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: rgba(12,12,14,.85); border-bottom: 1px solid var(--line); }
+  .nav { max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-weight: 800; letter-spacing: .12em; font-size: 20px; }
+  .logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 24px; color: var(--muted); font-size: 14px; }
+  .nav-links a { text-decoration: none; }
+  .nav-links a:hover { color: var(--text); }
+  .cart-btn { background: var(--gold); border: 0; color: #111; font-weight: 700; padding: 10px 18px; border-radius: 999px; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+  .cart-btn:hover { background: var(--gold2); }
+  .hero { max-width: 1200px; margin: 0 auto; padding: 72px 24px 32px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 40px; align-items: center; }
+  @media(max-width:900px){ .hero{grid-template-columns:1fr} }
+  .eyebrow { color: var(--gold); letter-spacing: .2em; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+  h1 { font-size: clamp(36px,6vw,64px); line-height: 1.05; margin: 12px 0 16px; font-family: Georgia, serif; }
+  h1 em { color: var(--gold); font-style: italic; }
+  .sub { color: var(--muted); font-size: 17px; max-width: 560px; }
+  .hero-stats { display: flex; gap: 32px; margin-top: 28px; }
+  .stat b { display: block; font-size: 22px; }
+  .stat small { color: var(--muted); }
+  .hero-card { background: linear-gradient(180deg,#232329,#121214); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+  .hero-card h3 { font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+  .featured-price { font-size: 32px; font-weight: 800; margin: 8px 0; }
+  .btn { display: inline-block; padding: 12px 20px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: #111; font-weight: 700; cursor: pointer; text-decoration: none; }
+  .btn-gold { background: var(--gold); border-color: var(--gold); }
+  .btn-ghost { background: transparent; color: var(--text); }
+  .toolbar { max-width: 1200px; margin: 24px auto 0; padding: 0 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+  input, select { background: var(--bg2); border: 1px solid var(--line); color: var(--text); padding: 10px 14px; border-radius: 10px; font-size: 14px; }
+  .grid { max-width: 1200px; margin: 20px auto 60px; padding: 0 24px; display: grid; grid-template-columns: repeat(auto-fill,minmax(270px,1fr)); gap: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: transform .15s; }
+  .card:hover { transform: translateY(-3px); border-color: #3f3f46; }
+  .thumb { height: 190px; display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; }
+  .badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,.6); border: 1px solid var(--gold); color: var(--gold2); font-size: 11px; padding: 4px 10px; border-radius: 999px; letter-spacing: .08em; font-weight: 700; }
+  .stock { position: absolute; top: 12px; right: 12px; background: var(--red); color: #fff; font-size: 11px; padding: 4px 10px; border-radius: 999px; font-weight: 700; }
+  .stock.low { background: #b45309; }
+  .body { padding: 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .cat { font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+  .title { font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .desc { font-size: 13.5px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .rarity { color: var(--gold2); }
+  .price-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 12px; }
+  .price { font-weight: 800; font-size: 18px; }
+  .add { background: var(--gold); border: 0; padding: 9px 14px; border-radius: 9px; font-weight: 700; cursor: pointer; }
+  .add:disabled { opacity: .4; cursor: not-allowed; }
+  .trust { max-width: 1200px; margin: 0 auto 60px; padding: 0 24px; display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  @media(max-width:800px){ .trust{grid-template-columns:1fr} }
+  .trust div { background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .trust b { display: block; margin-bottom: 6px; }
+  .trust p { color: var(--muted); font-size: 14px; }
+  footer { border-top: 1px solid var(--line); padding: 28px 24px; text-align: center; color: var(--muted); font-size: 13px; }
+  /* drawer */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; z-index: 60; }
+  .overlay.open { display: block; }
+  .drawer { position: fixed; top: 0; right: 0; width: 400px; max-width: 92vw; height: 100%; background: var(--bg2); border-left: 1px solid var(--line); z-index: 61; transform: translateX(100%); transition: .25s; display: flex; flex-direction: column; }
+  .drawer.open { transform: none; }
+  .drawer-head { padding: 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .drawer-items { flex: 1; overflow: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .ci { display: flex; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; align-items: center; }
+  .ci-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; }
+  .ci small { color: var(--muted); }
+  .drawer-foot { padding: 20px; border-top: 1px solid var(--line); }
+  .total-row { display: flex; justify-content: space-between; font-weight: 800; font-size: 18px; margin-bottom: 12px; }
+  .checkout-form { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .modal { position: fixed; inset: 0; z-index: 62; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal.open { display: flex; }
+  .modal-box { max-width: 600px; width: 100%; background: var(--bg2); border: 1px solid var(--line); border-radius: 18px; padding: 28px; }
+  .close { background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="logo">RARE<span>VAULT</span></div>
+    <nav class="nav-links">
+      <a href="#catalog">Catalog</a>
+      <a href="#why">Authentication</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="cart-btn" onclick="toggleCart(true)">Cart (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">Curated • Authenticated • One-of-one</div>
+    <h1>Own what <em>no one else</em> can.</h1>
+    <p class="sub">RareVault sells the world's most rare items — meteorites, lost coins, fossils, master instruments. Every piece is expert-verified, insured, and limited to a single owner.</p>
+    <div style="margin-top:24px; display:flex; gap:12px;">
+      <a class="btn btn-gold" href="#catalog">Browse the vault</a>
+      <button class="btn btn-ghost" onclick="openInquiry()">Request sourcing</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><b>8 pieces</b><small>live now</small></div>
+      <div class="stat"><b>100% insured</b><small>global shipping</small></div>
+      <div class="stat"><b>14 experts</b><small>authentication board</small></div>
+    </div>
+  </div>
+  <div class="hero-card" id="featuredCard"></div>
+</section>
+
+<div class="toolbar" id="catalog">
+  <div class="filters">
+    <input id="q" placeholder="Search: meteorite, stradivarius..." oninput="render()" style="min-width:260px" />
+    <select id="cat" onchange="render()">
+      <option value="">All categories</option>
+      <option>Space</option>
+      <option>Coins</option>
+      <option>Manuscripts</option>
+      <option>Jewels</option>
+      <option>Fossils</option>
+      <option>Comics</option>
+      <option>Instruments</option>
+    </select>
+    <select id="sort" onchange="render()">
+      <option value="featured">Sort: Featured</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
+      <option value="rarity">Rarity: Highest</option>
+    </select>
+  </div>
+  <div style="color:var(--muted); font-size:13px;" id="count"></div>
+</div>
+
+<main class="grid" id="grid"></main>
+
+<section class="trust" id="why">
+  <div><b>Certificate + Provenance</b><p>Every item ships with lab report, ownership history, and lifetime authenticity guarantee.</p></div>
+  <div><b>White-glove insured delivery</b><p>Armored, climate-controlled, fully insured shipping to 40+ countries in 7–14 days.</p></div>
+  <div><b>Escrow & returns</b><p>Funds held in escrow until you accept. 14-day inspection period on all vault pieces.</p></div>
+</section>
+
+<footer id="contact">RareVault © 2026 • concierge@rarevault.example • +1 (212) 555-0148<br/>Demo storefront — checkout is simulated, no real payment is processed.</footer>
+
+<div class="overlay" id="overlay" onclick="toggleCart(false)"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head"><b>Your Vault Cart</b><button class="close" onclick="toggleCart(false)">Close</button></div>
+  <div class="drawer-items" id="cartItems"></div>
+  <div class="drawer-foot">
+    <div class="total-row"><span>Total</span><span id="cartTotal">$0</span></div>
+    <button class="btn btn-gold" style="width:100%" onclick="checkout()">Secure checkout</button>
+    <form class="checkout-form" id="checkoutForm" style="display:none" onsubmit="placeOrder(event)">
+      <input required placeholder="Full name" id="f-name" />
+      <input required placeholder="Email" type="email" id="f-email" />
+      <input required placeholder="Shipping address" id="f-addr" />
+      <button class="btn" type="submit">Place order — <span id="payTotal"></span></button>
+      <small style="color:var(--muted)">Simulated checkout. No charge occurs.</small>
+    </form>
+  </div>
+</aside>
+
+<div class="modal" id="modal"><div class="modal-box" id="modalBox"></div></div>
+
+<script>
+const PRODUCTS = [
+  {id:'meteorite', title:'Lunar Meteorite Fragment — 214g', cat:'Space', price:48500, rarity:9.2, stock:1, icon:'🌙', bg:'linear-gradient(135deg,#312e81,#0ea5e9)', desc:'Authentic Moon rock, classified NWA 16788. Thin-section tested.', story:'Recovered in Northwest Africa 2021, matches Apollo 16 isotopic signature. Includes UCLA lab report and sealed display case.'},
+  {id:'nickel', title:'1913 Liberty Head Nickel — Elias Specimen', cat:'Coins', price:3200000, rarity:10, stock:1, icon:'🪙', bg:'linear-gradient(135deg,#78350f,#f59e0b)', desc:'One of only 5 known. The holy grail of US numismatics.', story:'Mysteriously struck at Philadelphia Mint. PCGS PR-66. Last sold for $3.7M. Provenance back to 1920.'},
+  {id:'gutenberg', title:'Gutenberg Bible Leaf (1455)', cat:'Manuscripts', price:155000, rarity:9.5, stock:1, icon:'📜', bg:'linear-gradient(135deg,#451a03,#a16207)', desc:'Original folio leaf, Latin Vulgate, rubricated in red.', story:'From the first substantial printed book in the West. Fewer than 49 copies survive. Framed with UV museum glass.'},
+  {id:'egg', title:'Fabergé Imperial Winter Rose Egg', cat:'Jewels', price:9800000, rarity:10, stock:1, icon:'🥚', bg:'linear-gradient(135deg,#831843,#f472b6)', desc:'Enamel, diamonds, moonstone. Workmaster Henrik Wigström.', story:'Imperial presentation piece, 1917. Lost for 90 years, rediscovered 2014. Fabergé research-site certified.'},
+  {id:'rex', title:'T. Rex Tooth — 7.2" Rooted', cat:'Fossils', price:24800, rarity:8.7, stock:2, icon:'🦖', bg:'linear-gradient(135deg,#1c1917,#57534e)', desc:'Hell Creek Formation, Montana. Museum-grade serrations intact.', story:'68M years old, CT-scanned, no restoration. Includes custom steel stand and dig-site GPS record.'},
+  {id:'comics', title:'Action Comics #1 (1938) CGC 6.0', cat:'Comics', price:6000000, rarity:9.9, stock:1, icon:'💥', bg:'linear-gradient(135deg,#7f1d1d,#ef4444)', desc:'First appearance of Superman. Only ~100 copies known.', story:'White pages, restored cover clean. CGC census verified. The single most valuable comic ever graded.'},
+  {id:'strad', title:'Stradivarius Violin 1714 “da Vinci”', cat:'Instruments', price:15900000, rarity:10, stock:1, icon:'🎻', bg:'linear-gradient(135deg,#3b0764,#a78bfa)', desc:'Golden Period Cremona. Concert-played, soloist tone.', story:' dendro-dated, J&A Beare certified. Played at Carnegie Hall 2019. Includes 200 years of ownership letters.'},
+  {id:'flag', title:'Apollo 11 Flown Flag — Beta Cloth', cat:'Space', price:89000, rarity:9.0, stock:1, icon:'🚀', bg:'linear-gradient(135deg,#0c4a6e,#22d3ee)', desc:'Carried to lunar surface July 20, 1969. Crew-signed COA.', story:'From personal kit of CMP Michael Collins estate. NASA photo-match LOA + notarized transfer chain.'},
+];
+let cart = JSON.parse(localStorage.getItem('rv_cart')||'[]');
+const fmt = n => '$' + n.toLocaleString('en-US');
+function save(){ localStorage.setItem('rv_cart', JSON.stringify(cart)); updateBadge(); renderCart(); }
+function updateBadge(){ document.getElementById('cartCount').textContent = cart.reduce((a,c)=>a+c.qty,0); }
+function render(){
+  const q = document.getElementById('q').value.toLowerCase();
+  const cat = document.getElementById('cat').value;
+  const sort = document.getElementById('sort').value;
+  let list = PRODUCTS.filter(p => (!cat || p.cat===cat) && (p.title.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)));
+  if(sort==='price-asc') list.sort((a,b)=>a.price-b.price);
+  if(sort==='price-desc') list.sort((a,b)=>b.price-a.price);
+  if(sort==='rarity') list.sort((a,b)=>b.rarity-a.rarity);
+  document.getElementById('count').textContent = list.length + ' pieces available';
+  document.getElementById('grid').innerHTML = list.map(p=>`
+    <article class="card">
+      <div class="thumb" style="background:${p.bg}"><span class="badge">${p.rarity.toFixed(1)} / 10 RARE</span>${p.stock<=1?'<span class="stock">1 OF 1</span>':'<span class="stock low">ONLY '+p.stock+' LEFT</span>'}<span>${p.icon}</span></div>
+      <div class="body">
+        <div class="cat">${p.cat}</div>
+        <div class="title">${p.title}</div>
+        <div class="desc">${p.desc}</div>
+        <div class="meta"><span class="rarity">◆ Rarity ${p.rarity}/10</span><span style="cursor:pointer;text-decoration:underline" onclick="view('${p.id}')">Details</span></div>
+        <div class="price-row"><div class="price">${fmt(p.price)}</div><button class="add" ${inCart(p.id)>=p.stock?'disabled':''} onclick="add('${p.id}')">${inCart(p.id)>=p.stock?'In cart':'Add'}</button></div>
+      </div>
+    </article>`).join('') || '<p style="color:var(--muted)">No pieces match. Try clearing search.</p>';
+}
+function inCart(id){ const f=cart.find(c=>c.id===id); return f?f.qty:0; }
+function add(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  const ex = cart.find(c=>c.id===id);
+  if(ex){ if(ex.qty>=p.stock) return; ex.qty++; } else cart.push({id, qty:1});
+  save(); render();
+}
+function remove(id){ cart = cart.filter(c=>c.id!==id); save(); render(); }
+function renderCart(){
+  const box = document.getElementById('cartItems');
+  if(!cart.length){ box.innerHTML = '<p style="color:var(--muted)">Your cart is empty. These pieces are one-of-one — once gone, gone forever.</p>'; }
+  else box.innerHTML = cart.map(c=>{
+    const p = PRODUCTS.find(x=>x.id===c.id);
+    return `<div class="ci"><div class="ci-icon" style="background:${p.bg}">${p.icon}</div>
+    <div style="flex:1"><b style="font-size:14px">${p.title}</b><br/><small>${fmt(p.price)} × ${c.qty}</small></div>
+    <button class="close" onclick="remove('${p.id}')">×</button></div>`;
+  }).join('');
+  const total = cart.reduce((a,c)=>a+PRODUCTS.find(p=>p.id===c.id).price*c.qty,0);
+  document.getElementById('cartTotal').textContent = fmt(total);
+  document.getElementById('payTotal').textContent = fmt(total);
+}
+function toggleCart(open){ document.getElementById('drawer').classList.toggle('open',open); document.getElementById('overlay').classList.toggle('open',open); }
+function view(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  document.getElementById('modalBox').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><span class="cat">${p.cat} • Rarity ${p.rarity}/10</span><button class="close" onclick="closeModal()">Close</button></div>
+  <h2 style="font-family:Georgia,serif;margin-bottom:8px">${p.title}</h2>
+  <div class="thumb" style="background:${p.bg};border-radius:12px;margin:12px 0;font-size:80px">${p.icon}</div>
+  <p style="color:var(--muted)">${p.story}</p>
+  <div class="total-row" style="margin-top:16px"><span>${fmt(p.price)}</span><span style="font-size:13px;font-weight:400;color:var(--muted)">${p.stock} available</span></div>
+  <button class="btn btn-gold" style="width:100%" onclick="add('${p.id}');closeModal();toggleCart(true)">Add to vault cart</button>`;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function openInquiry(){ alert('Concierge sourcing: email concierge@rarevault.example with what you hunt. We reply in 24h.'); }
+function checkout(){
+  if(!cart.length){ alert('Cart is empty.'); return; }
+  document.getElementById('checkoutForm').style.display='flex';
+}
+function placeOrder(e){
+  e.preventDefault();
+  const name = document.getElementById('f-name').value;
+  alert('Thank you, '+name+'! Order reserved for 48h. Our concierge will contact you for escrow + insured delivery.');
+  cart=[]; save(); render(); toggleCart(false);
+  document.getElementById('checkoutForm').style.display='none';
+  e.target.reset();
+}
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+// featured
+const feat = PRODUCTS.find(p=>p.id==='strad');
+document.getElementById('featuredCard').innerHTML = `<h3>★ Featured drop</h3><div style="font-size:56px;margin:12px 0">🎻</div><b>${feat.title}</b><p style="color:var(--muted);font-size:14px;margin:6px 0 12px">${feat.desc}</p><div class="featured-price">${fmt(feat.price)}</div><div style="display:flex;gap:10px"><button class="btn btn-gold" onclick="view('strad')">View piece</button><button class="btn btn-ghost" onclick="add('strad');toggleCart(true)">Add to cart</button></div>`;
+updateBadge(); render(); renderCart();
+</script>
+</body>
+</html>
